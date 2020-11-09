@@ -1,12 +1,13 @@
-from abstracts.ExtensionProcessor import ExtensionProcessor
+from .abstracts.ExtensionProcessor import ExtensionProcessor
 import cv2
 import numpy as np
-from Clip import Clip
+from .Clip import Clip
 import math
 
 class VideoProcessor(ExtensionProcessor):
-    def __init__(self, ext = '.mp4', n_frames_per_video= 16, frame_dim=(16, 16, 1), 
-    sliding_window=True, grayscale=True
+    def __init__(
+        self, ext = '.mp4', n_frames_per_video= 16, frame_dim=(16, 16, 1), 
+        sliding_window=True, grayscale=True, debug=False
     ):
         self.ext = ext
         self.n_frames_per_video = n_frames_per_video
@@ -99,5 +100,8 @@ class VideoProcessor(ExtensionProcessor):
                         stop_frame= stop
                        )
             clips.append(clip)
+        
+        if(self.debug == True):
+            print(f"Returning clips with shape {np.shape(clips)}")
             
         return clips

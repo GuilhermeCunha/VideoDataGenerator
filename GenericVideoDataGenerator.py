@@ -7,9 +7,13 @@ import os
 import cv2
 from copy import copy
 from tqdm import tqdm
-from Clip import Clip
-from abstracts.ExtensionProcessor import ExtensionProcessor
+from .Clip import Clip
+from .abstracts.ExtensionProcessor import ExtensionProcessor
 
+from .VideoProcessor import VideoProcessor
+
+
+p = VideoProcessor()
 class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def __init__(
@@ -21,7 +25,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         if not isinstance(processor, ExtensionProcessor):
             raise ValueError("'processor' must be an instance of ExtensionProcessor")
         
-        self.processor = processor
+        self.processor = p
         self.name = name
         self.batch_size = batch_size
         self.dataset_path = dataset_path
