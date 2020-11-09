@@ -6,13 +6,7 @@ from glob import glob
 import os
 import cv2
 from copy import copy
-
-class Clip:
-    def __init__(self, video_path, label, start_frame, stop_frame):
-        self.video_path = video_path
-        self.start_frame = start_frame
-        self.stop_frame = stop_frame
-        self.label = label
+from Clip import Clip
         
 class VideoDataGenerator(tf.keras.utils.Sequence):
 
@@ -83,8 +77,6 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         else:
             video.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-        fps = video.get(5)
-
         frames = []
         for k in range(self.n_frames_per_video):
             ret, frame = video.read()
@@ -105,7 +97,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
     def get_clips(self, path, label):
         
         if(self.sliding_window == False):
-            return Clip(path, 0, self.n_frames_per_video - 1)
+            return Clip(path, label, 0, self.n_frames_per_video - 1)
         
         n_frames = self.count_frames(path)
         
