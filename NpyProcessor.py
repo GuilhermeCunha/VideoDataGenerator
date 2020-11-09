@@ -33,6 +33,11 @@ class NpyProcessor(ExtensionProcessor):
     def get_cropped_frames(self, video, start_frame=None):
         raw_frames = self.get_window_from_video(video, start_frame)
 
+        if(self.debug == True):
+            print(f"Shape of raw_frames: {np.shape(raw_frames)}")
+            print(f"Shape of raw_frames[0]: {np.shape(raw_frames[0])}")
+
+
         frames = []
         for frame in raw_frames:
             if(self.grayscale == True):
@@ -54,7 +59,7 @@ class NpyProcessor(ExtensionProcessor):
     def get_clips(self, path, label):
         
         if(self.sliding_window == False):
-            return Clip(path, label, 0, self.n_frames_per_video - 1)
+            return Clip(path, label, 0, self.n_frames_per_video)
         
         n_frames = self.count_frames(path)
         
