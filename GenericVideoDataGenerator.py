@@ -11,9 +11,6 @@ from .Clip import Clip
 from .abstracts.ExtensionProcessor import ExtensionProcessor
 
 from .VideoProcessor import VideoProcessor
-
-
-p = VideoProcessor()
 class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def __init__(
@@ -25,7 +22,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         if not isinstance(processor, ExtensionProcessor):
             raise ValueError("'processor' must be an instance of ExtensionProcessor")
         
-        self.processor = p
+        self.processor = processor
         self.name = name
         self.batch_size = batch_size
         self.dataset_path = dataset_path
@@ -54,22 +51,27 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def __recognize_dataset__(self):
         data = []
-        
-        for class_name in self.class_names:
+        progress_bar = tqdm(self.class_names)
+        for i, class_name in enumerate(progress_bar):
             label = self.class_indexes[class_name]
             pattern = os.path.join(self.dataset_path , class_name, f"*{self.processor.ext}")
-            
             videos_paths = glob(pattern)
-            for video_path in videos_paths:
+            
+            for y, video_path in enumerate(videos_paths):
                 clips = self.processor.get_clips(video_path, label)
+                if(self.debug == True and i == 0 and y == 0):
+                    print(f"[{self.name}] Shape of clips: {np.shape(clips)} ")
+                    print(f"[{self.name}] Properties of clips[0]: {clips[0].start_frame}-{clips[0].stop_frame}")
 
                 data.extend(clips)
         
         self.data = np.array(data)
         
         if(self.debug == True):
-            print(f"{len(data)} data were recognized from {self.dataset_path}")
-        
+            print(f"[{self.name}] {len(data)} data were recognized from {self.dataset_path}")
+            print(f"[{self.name}] Shape of data: {np.shape(data)} ")
+            print(f"[{self.name}] Shape of data[0]: {np.shape(data[0])} ")
+
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.data))
         if self.shuffle == True:
@@ -88,7 +90,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         for clip in batch_data:
             try:
                 video = self.processor.get_video(clip.video_path)
-                frames = self.processor.get_cropped_frames(video, start_frame=clip.start_frame, grayscale=self.grayscale)
+                frames = self.processor.get_cropped_frames(video, start_frame=clip.start_frame)
 
                 if(self.pre_process == True):
                     frames = frames.astype('float32')
@@ -97,7 +99,8 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
 
                 X.append(frames)
                 y.append(clip.label)
-            except:
+            except Exception as e:
+                print(e)
                 print(f"[{self.name}] ERROR {clip.video_path} | {clip.start_frame}")
         
         return np.array(X), tf.keras.utils.to_categorical(y, self.n_classes)

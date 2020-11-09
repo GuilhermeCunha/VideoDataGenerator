@@ -4,9 +4,9 @@ import numpy as np
 from .Clip import Clip
 import math
 
-class VideoProcessor(ExtensionProcessor):
+class NpyProcessor(ExtensionProcessor):
     def __init__(
-        self, ext = '.mp4', n_frames_per_video= 16, frame_dim=(16, 16, 1), 
+        self, ext = '.npy', n_frames_per_video= 16, frame_dim=(16, 16, 1), 
         sliding_window=True, grayscale=True, debug=False
     ):
         self.ext = ext
@@ -25,56 +25,25 @@ class VideoProcessor(ExtensionProcessor):
         return cv2.resize(image, dim,interpolation=cv2.INTER_AREA)
 
     def count_frames(self, path):
-        cap = cv2.VideoCapture(path)
-        return int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        return len(np.load(path))
 
     def get_video(self, video_path):
-        return cv2.VideoCapture(video_path)
+        return np.load(video_path)
 
     def get_cropped_frames(self, video, start_frame=None):
-        if(start_frame is not None):
-            video.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-        else:
-            video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        raw_frames = self.get_window_from_video(video, start_frame)
 
         frames = []
-        for _k in range(self.n_frames_per_video):
-            _, frame = video.read()
-            img = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
-
+        for frame in raw_frames:
             if(self.grayscale == True):
+                img = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
                 img = self.image_rgb_to_grayscale(img)
-
-            frames.append(img)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+  
         if(self.debug == True):
             print(f"Shape of frames: {np.shape(frames)}")
             print(f"Shape of frames[0]: {np.shape(frames[0])}")
         return np.array(frames)
 
-    def get_np_from_video(self, path):
-        cap = cv2.VideoCapture(path)
-        
-        frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        buf = np.empty((frameCount, self.frame_dim[0], 
-        self.frame_dim[1], self.frame_dim[2]), np.dtype('uint8'))
-
-        i = 0
-        success, frame = cap.read()
-        
-        while success:
-            img = self.resize_image(frame, self.frame_dim)
-
-            if(self.grayscale == True):
-                img = self.image_rgb_to_grayscale(img)
-                
-            buf[i] = img
-            success, frame = cap.read()
-            
-        return buf
 
     def get_window_from_video(self, video, start_frame=None):
         if(start_frame is None):
