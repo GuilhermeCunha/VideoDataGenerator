@@ -24,12 +24,12 @@ class NpyProcessor(ExtensionProcessor):
     def resize_image(self, image, dim):
         return cv2.resize(image, dim,interpolation=cv2.INTER_AREA)
 
-    def count_frames(self, path):
-        return len(np.load(path))
-
     def get_video(self, video_path):
-        return np.load(video_path)
-
+        return np.load(video_path, allow_pickle=True)
+    
+    def count_frames(self, path):
+        return len(self.get_video(path))
+   
     def get_cropped_frames(self, video, start_frame=None):
         raw_frames = self.get_window_from_video(video, start_frame)
 
