@@ -6,7 +6,7 @@ import math
 
 class NpyProcessor(ExtensionProcessor):
     def __init__(
-        self, ext = '.npy', n_frames_per_video= 16, frame_dim=(16, 16, 1), 
+        self, ext = '.npy', n_frames_per_video= 16, frame_dim=None, 
         sliding_window=True, grayscale=True, debug=False
     ):
         self.ext = ext
@@ -15,6 +15,7 @@ class NpyProcessor(ExtensionProcessor):
         self.frame_dim = frame_dim
         self.sliding_window=sliding_window
         self.grayscale=grayscale
+        self.name = 'NpyProcessor'
 
 
     def image_rgb_to_grayscale(self, image):
@@ -22,39 +23,67 @@ class NpyProcessor(ExtensionProcessor):
         return np.expand_dims(img, axis=-1)
         
     def resize_image(self, image, dim):
-        return cv2.resize(image, dim,interpolation=cv2.INTER_AREA)
-
-    def get_video(self, video_path):
-        return np.load(video_path, allow_pickle=True)
-    
-    def count_frames(self, path):
-        return len(self.get_video(path))
-   
-    def get_cropped_frames(self, video, start_frame=None):
-        raw_frames = self.get_window_from_video(video, start_frame)
-
-        if(self.debug == True):
-            print(f"Shape of raw_frames: {np.shape(raw_frames)}")
-            print(f"Shape of raw_frames[0]: {np.shape(raw_frames[0])}")
-
-
-        frames = []
-        for frame in raw_frames:
-            if(self.grayscale == True):
-                img = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
-                img = self.image_rgb_to_grayscale(img)
-  
-        if(self.debug == True):
-            print(f"Shape of frames: {np.shape(frames)}")
-            print(f"Shape of frames[0]: {np.shape(frames[0])}")
-        return np.array(frames)
-
-
-    def get_window_from_video(self, video, start_frame=None):
-        if(start_frame is None):
-            return video[:self.n_frames_per_video]
         
-        return video[start_frame:start_frame + self.n_frames_per_video]
+        resized =  cv2.resize(image, (dim[0], dim[1]),interpolation=cv2.INTER_AREA)
+        
+        if(dim[2] == 1):
+            resized = np.expand_dims(resized, axis=-1)
+            
+        return resized
+    def get_video(self, video_path):
+        try:
+            return np.load(video_path, allow_pickle=True)
+        except Exception as e:
+            print(f"[{self.name}] - get_video ERROR")
+            print(e)
+            
+    def count_frames(self, path):
+        video = self.get_video(path)
+        n_frames = np.shape(video)[0]
+        
+        if(self.debug == True):
+            print(f"Shape of {path}: {np.shape(video)}")
+            print(f"Frames of {path}: {n_frames}")
+        return n_frames
+   
+    def get_window_from_video(self, video, start_frame=None):
+        try:
+            if(start_frame is None):
+                return video[0:self.n_frames_per_video]
+
+            return video[start_frame:start_frame + self.n_frames_per_video]
+        except Exception as e:
+            print(f"[{self.name}] - get_window_from_video ERROR")
+            print(e)
+            
+    def get_cropped_frames(self, video, start_frame=None):
+        try:
+            
+            raw_frames = self.get_window_from_video(video, start_frame)
+            if(self.debug == True):
+                print(f"Shape of video: {np.shape(video)}")
+                print(f"Shape of raw_frames: {np.shape(raw_frames)}")
+                print(f"Shape of raw_frames[0]: {np.shape(raw_frames[0])}")
+
+
+            frames = []
+            for i, frame in enumerate(raw_frames):
+                if(self.frame_dim is not None):
+                    frame = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1], self.frame_dim[2]))
+                
+                if(self.grayscale == True):
+                    frame = self.image_rgb_to_grayscale(frame)
+                
+                frames.append(frame)
+                
+            if(self.debug == True):
+                print(f"Shape of frames: {np.shape(frames)}")
+                print(f"Shape of frames[0]: {np.shape(frames[0])}")
+                
+            return np.array(frames)
+        except Exception as e:
+            print(f"[{self.name}] - get_cropped_frames ERROR")
+            print(e)
 
     def get_clips(self, path, label):
         
@@ -78,7 +107,7 @@ class NpyProcessor(ExtensionProcessor):
                        )
             clips.append(clip)
 
-        # if(self.debug == True):
-        #     print(f"Number of frames : {n_frames}")
-        #     print(f"Number of windows : {n_windows}")
+        if(self.debug == True):
+            print(f"Number of frames : {n_frames}")
+            print(f"Number of windows : {n_windows}")
         return clips

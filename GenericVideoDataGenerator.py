@@ -56,7 +56,9 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
             label = self.class_indexes[class_name]
             pattern = os.path.join(self.dataset_path , class_name, f"*{self.processor.ext}")
             videos_paths = glob(pattern)
-            
+            if(self.debug == True and i == 0):
+                print(f"Number of videos of class {class_name}: {len(videos_paths)}")
+                
             for y, video_path in enumerate(videos_paths):
                 clips = self.processor.get_clips(video_path, label)
                 if(self.debug == True and i == 0 and y == 0):
@@ -78,8 +80,21 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
             np.random.shuffle(self.indexes)
             
     def __len__(self):
-        return math.ceil(len(self.data) / self.batch_size)
+#         return math.ceil(len(self.data) / self.batch_size)
+        return int(np.floor(len(self.data) / float(self.batch_size)))
 
+    def preprocess_data(self, data):
+        data = np.array(data).astype('float32')         
+        
+        data_mean = np.mean(data)
+        
+        if(data_mean != 0):
+            data_max = np.max(data)
+
+            data -= data_mean
+            data /= data_max
+        
+        return data
     def __getitem__(self, index): # Generate one batch of data
         indexes = self.indexes[index * self.batch_size: (index + 1) * self.batch_size]
         batch_data = [self.data[i] for i in indexes]
@@ -87,21 +102,22 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         X = []
         y = []
         
-        for clip in batch_data:
+        for i, clip in enumerate(batch_data):
             try:
                 video = self.processor.get_video(clip.video_path)
                 frames = self.processor.get_cropped_frames(video, start_frame=clip.start_frame)
-
+                
                 if(self.pre_process == True):
-                    frames = frames.astype('float32')
-                    frames -= np.mean(frames)
-                    frames /= np.max(frames)
-
+                    frames = self.preprocess_data(frames)
+                    
                 X.append(frames)
                 y.append(clip.label)
+                
             except Exception as e:
+                print(f"[{self.name}] __getitem__ ERROR {clip.video_path} | {clip.start_frame}")
                 print(e)
-                print(f"[{self.name}] ERROR {clip.video_path} | {clip.start_frame}")
         
-        return np.array(X), tf.keras.utils.to_categorical(y, self.n_classes)
+        categorical_y = tf.keras.utils.to_categorical(y, self.n_classes)
+        
+        return np.array(X), categorical_y
     
