@@ -32,7 +32,8 @@ class VideoProcessor(ExtensionProcessor):
         return cv2.VideoCapture(video_path)
 
     def get_cropped_frames(self, video, start_frame=None):
-        if(start_frame is not None):
+
+        if(start_frame != None):
             video.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
         else:
             video.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -40,18 +41,22 @@ class VideoProcessor(ExtensionProcessor):
         frames = []
         for _k in range(self.n_frames_per_video):
             _, frame = video.read()
-            img = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
+
+            if(self.frame_dim != None):
+                frame = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
 
             if(self.grayscale == True):
-                img = self.image_rgb_to_grayscale(img)
+                frame = self.image_rgb_to_grayscale(frame)
 
-            frames.append(img)
+            frames.append(frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
         if(self.debug == True):
             print(f"Shape of frames: {np.shape(frames)}")
             print(f"Shape of frames[0]: {np.shape(frames[0])}")
+
         return np.array(frames)
 
     def get_np_from_video(self, path):
@@ -77,7 +82,7 @@ class VideoProcessor(ExtensionProcessor):
         return buf
 
     def get_window_from_video(self, video, start_frame=None):
-        if(start_frame is None):
+        if(start_frame == None):
             return video[:self.n_frames_per_video]
         
         return video[start_frame:start_frame + self.n_frames_per_video]
@@ -103,8 +108,5 @@ class VideoProcessor(ExtensionProcessor):
                         stop_frame= stop
                        )
             clips.append(clip)
-
-        # if(self.debug == True):
-        #     print(f"Number of frames : {n_frames}")
-        #     print(f"Number of windows : {n_windows}")
+            
         return clips

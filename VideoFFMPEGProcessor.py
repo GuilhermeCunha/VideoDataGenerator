@@ -27,6 +27,7 @@ class VideoProcessor(ExtensionProcessor):
         if(self.debug == True):
             print(f"Shape of {path}: {np.shape(video)}")
             print(f"Frames of {path}: {n_frames}")
+            
         return n_frames
 
     def get_video(self, video_path):
@@ -42,8 +43,9 @@ class VideoProcessor(ExtensionProcessor):
         frames = []
         for frame in raw_frames:
             if(self.grayscale == True):
-                img = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
-  
+                frame = self.resize_image(frame, (self.frame_dim[0], self.frame_dim[1]))
+            
+            frames.append(frame)
         if(self.debug == True):
             print(f"Shape of frames: {np.shape(frames)}")
             print(f"Shape of frames[0]: {np.shape(frames[0])}")

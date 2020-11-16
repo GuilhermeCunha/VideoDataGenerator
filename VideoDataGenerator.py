@@ -42,6 +42,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         self.val_data = []
         self.test_data = []
         self.__recognize_dataset__()
+        self.indexes = np.arange(len(self.data))
         self.on_epoch_end()
         
     def resize_image(self, image, dim):
@@ -138,13 +139,23 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
             print(f"{len(data)} data were recognized from {self.dataset_path}")
         
     def on_epoch_end(self):
-        self.indexes = np.arange(len(self.data))
         if self.shuffle == True:
+            self.indexes = np.arange(len(self.data))
             np.random.shuffle(self.indexes)
             
-    def __len__(self):
+    def __len__(self): # Denotes the number of batches per epoch
         return math.ceil(len(self.data) / self.batch_size)
 
+    def get_y_true(self):
+        y_true = []
+
+        for x in range(self.__len__()):
+            batch = self.__getitem__(x)[1]
+            for y in range(self.batch_size):
+                y_true.append(batch[y])
+
+        return y_true
+        
     def __getitem__(self, index): # Generate one batch of data
         indexes = self.indexes[index * self.batch_size: (index + 1) * self.batch_size]
         batch_data = [self.data[i] for i in indexes]
