@@ -25,12 +25,16 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         self, dataset_path, processor, batch_size, 
         shuffle=True, class_names=None, debug=False, 
         pre_process=True,name="GENERATOR", cache_videos=False,
-        max_cached_iters=0
+        max_cached_iters=None
         ):
 
         if not isinstance(processor, ExtensionProcessor):
             raise ValueError("'processor' must be an instance of ExtensionProcessor")
         
+        if(cache_videos == True):
+            if(max_cached_iters is not None):
+                raise ValueError("If 'cache_video' is True, 'max_cached_iters' needs to be informed")
+
         self.processor = processor
         self.name = name
         self.batch_size = batch_size
