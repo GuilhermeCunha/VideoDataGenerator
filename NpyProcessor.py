@@ -37,7 +37,11 @@ class NpyProcessor(ExtensionProcessor):
             return image
 
         resized =  cv2.resize(image, (dim[0], dim[1]),interpolation=cv2.INTER_AREA)
-            
+
+
+        if(len(np.shape(resized)) <= 2):
+            resized = np.expand_dims(resized, axis=-1)
+
         return resized
     def get_video(self, video_path):
         logger.debug(f"Getting video {video_path}")
@@ -91,10 +95,9 @@ class NpyProcessor(ExtensionProcessor):
                 if(self.frame_dim is not None):
                     frame = self.resize_image(frame, self.frame_dim)
 
-                    if(len(np.shape(frame)) > 2):
-                        if(self.frame_dim[2] == 1 and np.shape(frame)[2] == 3):
-                            frame = self.image_rgb_to_grayscale(frame)
-                
+                if(self.frame_dim[2] == 1 and np.shape(frame)[2] == 3):
+                    frame = self.image_rgb_to_grayscale(frame)
+                    
                 frames.append(frame)
                 
             if(self.debug == True):
