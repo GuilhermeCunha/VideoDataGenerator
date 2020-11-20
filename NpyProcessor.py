@@ -20,7 +20,10 @@ class NpyProcessor(ExtensionProcessor):
         self.sliding_window=sliding_window
         self.grayscale=grayscale
         self.name = 'NpyProcessor'
-
+    
+        self.max = 0
+        self.mean = 0
+        self.n_videos = 0
 
     def image_rgb_to_grayscale(self, image):
         logger.debug("Converting RGB image to Grayscale")
@@ -48,6 +51,11 @@ class NpyProcessor(ExtensionProcessor):
     def count_frames(self, path):
         logger.debug(f"Counting frames of video {path}")
         video = self.get_video(path)
+        
+        self.max += np.max(video)
+        self.mean += np.mean(video)
+        self.n_videos += 1
+        
         n_frames = np.shape(video)[0]
         
         if(self.debug == True):

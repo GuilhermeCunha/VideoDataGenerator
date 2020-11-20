@@ -16,6 +16,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# TODO Guardar index do dataset em arquivo
+
+
 class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def __init__(
@@ -100,14 +103,8 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def preprocess_data(self, data):
         data = np.array(data).astype('float32')         
-        
-        data_mean = np.mean(data)
-        
-        if(data_mean != 0):
-            data_max = np.max(data)
-
-            data -= data_mean
-            data /= data_max
+        data -= self.processor.mean
+        data /= self.processor.max
         
         return data
 
@@ -171,7 +168,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
                 logger.info(f"[{self.name}] __getitem__ ERROR {clip.video_path} | {clip.start_frame}")
                 logger.error(e)
         
-        categorical_y = tf.keras.utils.to_categorical(y, self.n_classes)
+        categorical_y = tf.keras.utils.to_categorical(np.array(y), self.n_classes)
 
         self.handle_cache()
         return np.array(X), categorical_y
@@ -179,3 +176,18 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def get_batch(self, index):
         return self.__getitem__(index)
+    
+    def infos(self):
+        X, y = self.__getitem__(0)
+        
+        print(f"- X")
+        print(f"-   X shape: {np.shape(X)}")
+        print(f"-   X[0] shape: {np.shape(X[0])}")
+        print(f"-   X[0][0] shape: {np.shape(X[0][0])}")
+        print(f"-   X[0][0] min/max: {np.min(X[0][0])}/{np.max(X[0][0])}")
+        
+        
+        print(f"- y")
+        print(f"-   y shape: {np.shape(y)}")
+        print(f"-   y[0] shape: {np.shape(y[0])}")
+        print(f"-   y[0] min/max: {np.min(y[0])}/{np.max(y[0])}")
