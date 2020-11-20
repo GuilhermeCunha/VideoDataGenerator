@@ -28,12 +28,27 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         max_cached_iters=None
         ):
 
+        if(os.path.isdir(dataset_path) == False):
+            raise ValueError("'dataset_path' invalid.")
+
         if not isinstance(processor, ExtensionProcessor):
             raise ValueError("'processor' must be an instance of ExtensionProcessor")
         
         if(cache_videos == True):
-            if(max_cached_iters is not None):
+            if(max_cached_iters is None):
                 raise ValueError("If 'cache_video' is True, 'max_cached_iters' needs to be informed")
+            
+            if(isinstance(max_cached_iters, int) != True):
+                raise ValueError("'max_cached_iters' must be an int")
+            
+        if(isinstance(batch_size, int) != True):
+            raise ValueError("'batch_size' must be an int")
+
+        if(isinstance(shuffle, bool) != True):
+            raise ValueError("'batch_size' must be an boolean")
+
+        if(isinstance(debug, bool) != True):
+            raise ValueError("'debug' must be an boolean")
 
         self.processor = processor
         self.name = name

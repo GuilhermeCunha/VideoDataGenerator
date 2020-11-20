@@ -15,6 +15,15 @@ class NpyProcessor(ExtensionProcessor):
     ):
         if(frame_dim is None):
             raise ValueError("'frame_dim' needs to be inserted. Ex.: (N_ROWS, N_COLS, N_CHANNELS)")
+        
+        if(len(np.shape(frame_dim)) != 3 ):
+            raise ValueError("'frame_dim' must have size 3. Ex.: (N_ROWS, N_COLS, N_CHANNELS)")
+        
+        if(ext != '.npy'):
+            raise ValueError("'ext' invalid. must be '.npy'")
+
+        if(n_frames_per_video < 2):
+            raise ValueError("'n_frames_per_video' must be greater than 1")
 
         self.ext = ext
         self.debug = debug
@@ -52,7 +61,7 @@ class NpyProcessor(ExtensionProcessor):
             resized = np.expand_dims(resized, axis=-1)
 
         return resized
-        
+
     def get_video(self, video_path):
         logger.debug(f"Getting video {video_path}")
 
