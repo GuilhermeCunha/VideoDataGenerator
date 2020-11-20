@@ -6,7 +6,7 @@ from glob import glob
 import os
 import cv2
 from copy import copy
-from Clip import Clip
+from .Clip import Clip
         
 class VideoDataGenerator(tf.keras.utils.Sequence):
 
