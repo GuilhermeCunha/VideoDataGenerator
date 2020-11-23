@@ -1,4 +1,4 @@
-def get_sliding_windows(n_frames, size):
+def get_sliding_windows(n_frames, size, distance=0):
     start = 0
     stop = start + size
 
@@ -6,7 +6,7 @@ def get_sliding_windows(n_frames, size):
     
     while(stop <= n_frames):
         windows.append((start, stop))
-        start += 1
+        start += (1 + distance) 
         stop += 1
 
     return windows

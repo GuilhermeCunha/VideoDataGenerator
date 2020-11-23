@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class NpyProcessor(ExtensionProcessor):
     def __init__(
         self, ext = '.npy', n_frames_per_video= 16, frame_dim=None,
-        windowing= None, debug=False
+        windowing= None, windowing_distance=0, debug=False
     ):
         if(frame_dim is None):
             raise ValueError("'frame_dim' needs to be inserted. Ex.: (N_ROWS, N_COLS, N_CHANNELS)")
@@ -37,6 +37,7 @@ class NpyProcessor(ExtensionProcessor):
         self.frame_dim = frame_dim
         self.name = 'NpyProcessor'
         self.windowing = windowing
+        self.windowing_distance = windowing_distance
         self.max = 0
         self.mean = 0
         self.min = 0
@@ -151,10 +152,10 @@ class NpyProcessor(ExtensionProcessor):
     
         if self.windowing is not None:
             if(self.windowing == 'sliding'):
-                possible_windows = windows.get_sliding_windows(n_frames, self.n_frames_per_video)
+                possible_windows = windows.get_sliding_windows(n_frames, self.n_frames_per_video, distance=self.windowing_distance)
             
             if(self.windowing == 'normal'):
-                possible_windows = windows.get_windows(n_frames, self.n_frames_per_video)
+                possible_windows = windows.get_windows(n_frames, self.n_frames_per_video, distance=self.windowing_distance)
 
             for start, stop in possible_windows:
                 clip = Clip(path, 
