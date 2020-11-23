@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class NpyProcessor(ExtensionProcessor):
     def __init__(
-        self, ext = '.npy', n_frames_per_video= 16, frame_dim=None,
+        self, ext = '.npy', n_frames_per_clip = 16, frame_dim=None,
         windowing= None, windowing_distance=0, debug=False
     ):
         if(frame_dim is None):
@@ -25,15 +25,15 @@ class NpyProcessor(ExtensionProcessor):
         if(ext != '.npy'):
             raise ValueError("'ext' invalid. must be '.npy'")
 
-        if(n_frames_per_video < 2):
-            raise ValueError("'n_frames_per_video' must be greater than 1")
+        if(n_frames_per_clip < 2):
+            raise ValueError("'n_frames_per_clip' must be greater than 1")
 
         if(windowing in [None, 'normal', 'sliding'] == False):
             raise ValueError("'windowing' is invalid. Must be in [None, 'normal', 'sliding']")
 
         self.ext = ext
         self.debug = debug
-        self.n_frames_per_video = n_frames_per_video
+        self.n_frames_per_clip = n_frames_per_clip
         self.frame_dim = frame_dim
         self.name = 'NpyProcessor'
         self.windowing = windowing
@@ -107,9 +107,9 @@ class NpyProcessor(ExtensionProcessor):
         logger.debug(f"Getting windows of video")
         try:
             if(start_frame is None):
-                return video[0:self.n_frames_per_video]
+                return video[0:self.n_frames_per_clip]
 
-            return video[start_frame:start_frame + self.n_frames_per_video]
+            return video[start_frame:start_frame + self.n_frames_per_clip]
         except Exception as e:
             print(f"[{self.name}] - get_window_from_video ERROR")
             print(e)
@@ -152,10 +152,10 @@ class NpyProcessor(ExtensionProcessor):
     
         if self.windowing is not None:
             if(self.windowing == 'sliding'):
-                possible_windows = windows.get_sliding_windows(n_frames, self.n_frames_per_video, distance=self.windowing_distance)
+                possible_windows = windows.get_sliding_windows(n_frames, self.n_frames_per_clip, distance=self.windowing_distance)
             
             if(self.windowing == 'normal'):
-                possible_windows = windows.get_windows(n_frames, self.n_frames_per_video, distance=self.windowing_distance)
+                possible_windows = windows.get_windows(n_frames, self.n_frames_per_clip, distance=self.windowing_distance)
 
             for start, stop in possible_windows:
                 clip = Clip(path, 
@@ -167,6 +167,6 @@ class NpyProcessor(ExtensionProcessor):
 
             return clips
 
-        clips.append(Clip(path, label, 0, self.n_frames_per_video))
+        clips.append(Clip(path, label, 0, self.n_frames_per_clip))
 
         return clips

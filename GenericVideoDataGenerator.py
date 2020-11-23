@@ -17,8 +17,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 # TODO Guardar index do dataset em arquivo
-# TODO Implementar diferentes tipos de janelas deslizantes
-
 
 class VideoDataGenerator(tf.keras.utils.Sequence):
 
@@ -116,7 +114,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
     def on_epoch_end(self):
         if self.shuffle == True:
             self.shuffle_data()
-            
+
     def __len__(self):
         return math.ceil(len(self.data) / self.batch_size)
         # return int(np.floor(len(self.data) / float(self.batch_size)))
@@ -199,7 +197,11 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
     
     def infos(self):
         X, y = self.__getitem__(0)
-        
+
+
+        print(f"Number of samples: {len(self.data)}")
+        print(f"Batch Size: {self.batch_size}")
+        print(f"Batch 0")
         print(f"- X")
         print(f"-   X shape: {np.shape(X)}")
         print(f"-   X[0] shape: {np.shape(X[0])}")
