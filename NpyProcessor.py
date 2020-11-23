@@ -2,16 +2,19 @@ from .abstracts.ExtensionProcessor import ExtensionProcessor
 import cv2
 import numpy as np
 from .Clip import Clip
+from .utils import windows
+
 import math
 import sys
 import logging
+
 
 logger = logging.getLogger(__name__)
 
 class NpyProcessor(ExtensionProcessor):
     def __init__(
-        self, ext = '.npy', n_frames_per_video= 16, frame_dim=None, 
-        sliding_window=True, debug=False
+        self, ext = '.npy', n_frames_per_video= 16, frame_dim=None,
+        windowing= None, debug=False
     ):
         if(frame_dim is None):
             raise ValueError("'frame_dim' needs to be inserted. Ex.: (N_ROWS, N_COLS, N_CHANNELS)")
@@ -25,15 +28,19 @@ class NpyProcessor(ExtensionProcessor):
         if(n_frames_per_video < 2):
             raise ValueError("'n_frames_per_video' must be greater than 1")
 
+        if(windowing in [None, 'normal', 'sliding'] == False):
+            raise ValueError("'windowing' is invalid. Must be in [None, 'normal', 'sliding']")
+
         self.ext = ext
         self.debug = debug
         self.n_frames_per_video = n_frames_per_video
         self.frame_dim = frame_dim
-        self.sliding_window=sliding_window
         self.name = 'NpyProcessor'
-    
+        self.windowing = windowing
         self.max = 0
         self.mean = 0
+        self.min = 0
+
         self.n_videos = 0
 
     def image_rgb_to_grayscale(self, image):
@@ -66,7 +73,15 @@ class NpyProcessor(ExtensionProcessor):
         logger.debug(f"Getting video {video_path}")
 
         try:
-            return np.load(video_path, allow_pickle=True)
+            video = np.load(video_path, allow_pickle=True)
+
+            self.max += np.max(video)
+            self.mean += np.mean(video)
+            self.min += np.min(video)
+
+            self.n_videos += 1
+
+            return video
         except Exception as e:
             print(f"[{self.name}] - get_video ERROR")
             print(e)
@@ -79,12 +94,7 @@ class NpyProcessor(ExtensionProcessor):
           
     def count_frames(self, path):
         logger.debug(f"Counting frames of video {path}")
-        video = self.get_video(path)
-        
-        self.max += np.max(video)
-        self.mean += np.mean(video)
-        self.n_videos += 1
-        
+        video = self.get_video(path)    
         n_frames = np.shape(video)[0]
         
         if(self.debug == True):
@@ -137,31 +147,25 @@ class NpyProcessor(ExtensionProcessor):
     def get_clips(self, path, label):
         logger.debug(f"Getting clips of video {path}")
         n_frames = self.count_frames(path)
-        
-        if(self.sliding_window == False):
-            clips = []
-            clips.append(Clip(path, label, 0, self.n_frames_per_video))
+        clips = []
+    
+        if self.windowing is not None:
+            if(self.windowing == 'sliding'):
+                windows = windows.get_sliding_windows(n_frames, self.n_frames_per_video)
+            
+            if(self.windowing == 'normal'):
+                windows = windows.get_windows(n_frames, self.n_frames_per_video)
+
+            for start, stop in windows:
+                clip = Clip(path, 
+                                label, 
+                                start_frame= start, 
+                                stop_frame= stop
+                            )
+                clips.append(clip)
 
             return clips
-        
-        
-        
-        clips = []
-        n_windows = math.floor(n_frames / self.n_frames_per_video) - 1
-        
-        for i in range(n_windows):
-            
-            start = i * self.n_frames_per_video
-            stop = (i + 1) * self.n_frames_per_video
 
-            clip = Clip(path, 
-                        label, 
-                        start_frame= start, 
-                        stop_frame= stop
-                       )
-            clips.append(clip)
+        clips.append(Clip(path, label, 0, self.n_frames_per_video))
 
-        if(self.debug == True):
-            print(f"Number of frames : {n_frames}")
-            print(f"Number of windows : {n_windows}")
         return clips

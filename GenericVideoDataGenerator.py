@@ -211,5 +211,3 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         print(f"-   y shape: {np.shape(y)}")
         print(f"-   y[0] shape: {np.shape(y[0])}")
         print(f"-   y[0] min/max: {np.min(y[0])}/{np.max(y[0])}")
-        
-        print(y)
