@@ -122,8 +122,8 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def preprocess_data(self, data):
         data = np.array(data).astype('float32')         
-        data -= self.processor.mean
-        data /= self.processor.max
+        data -= self.processor.get_mean
+        data /= self.processor.get_max
         
         return data
 
@@ -187,7 +187,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
                 logger.info(f"[{self.name}] __getitem__ ERROR {clip.video_path} | {clip.start_frame}")
                 logger.error(e)
         
-        categorical_y = tf.keras.utils.to_categorical(np.array(y), self.n_classes)
+        categorical_y = tf.keras.utils.to_categorical(np.array(y).astype(int), self.n_classes)
 
         self.handle_cache()
         return np.array(X), categorical_y

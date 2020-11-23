@@ -70,7 +70,13 @@ class NpyProcessor(ExtensionProcessor):
         except Exception as e:
             print(f"[{self.name}] - get_video ERROR")
             print(e)
-            
+    
+    def get_mean(self):
+        return self.mean / self.n_videos
+        
+    def get_max(self):
+        return self.mean / self.n_videos
+          
     def count_frames(self, path):
         logger.debug(f"Counting frames of video {path}")
         video = self.get_video(path)
