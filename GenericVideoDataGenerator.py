@@ -17,6 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # TODO Guardar index do dataset em arquivo
+# TODO Implementar diferentes tipos de janelas deslizantes
 
 
 class VideoDataGenerator(tf.keras.utils.Sequence):
@@ -187,7 +188,7 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
                 logger.info(f"[{self.name}] __getitem__ ERROR {clip.video_path} | {clip.start_frame}")
                 logger.error(e)
         
-        categorical_y = tf.keras.utils.to_categorical(np.array(y).astype(int), self.n_classes)
+        categorical_y = tf.keras.utils.to_categorical(np.array(y), self.n_classes, dtype='int32')
 
         self.handle_cache()
         return np.array(X), categorical_y
@@ -210,3 +211,5 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
         print(f"-   y shape: {np.shape(y)}")
         print(f"-   y[0] shape: {np.shape(y[0])}")
         print(f"-   y[0] min/max: {np.min(y[0])}/{np.max(y[0])}")
+        
+        print(y)
