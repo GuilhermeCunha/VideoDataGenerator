@@ -16,7 +16,7 @@ class NpyProcessor(ExtensionProcessor):
         if(frame_dim is None):
             raise ValueError("'frame_dim' needs to be inserted. Ex.: (N_ROWS, N_COLS, N_CHANNELS)")
         
-        if(len(np.shape(frame_dim)) != 3 ):
+        if(len(frame_dim) != 3 ):
             raise ValueError("'frame_dim' must have size 3. Ex.: (N_ROWS, N_COLS, N_CHANNELS)")
         
         if(ext != '.npy'):
