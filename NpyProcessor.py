@@ -151,12 +151,12 @@ class NpyProcessor(ExtensionProcessor):
     
         if self.windowing is not None:
             if(self.windowing == 'sliding'):
-                windows = windows.get_sliding_windows(n_frames, self.n_frames_per_video)
+                possible_windows = windows.get_sliding_windows(n_frames, self.n_frames_per_video)
             
             if(self.windowing == 'normal'):
-                windows = windows.get_windows(n_frames, self.n_frames_per_video)
+                possible_windows = windows.get_windows(n_frames, self.n_frames_per_video)
 
-            for start, stop in windows:
+            for start, stop in possible_windows:
                 clip = Clip(path, 
                                 label, 
                                 start_frame= start, 
