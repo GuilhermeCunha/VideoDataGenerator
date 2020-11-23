@@ -122,8 +122,8 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
 
     def preprocess_data(self, data):
         data = np.array(data).astype('float32')         
-        data -= self.processor.get_mean
-        data /= self.processor.get_max
+        data -= self.processor.get_mean()
+        data /= self.processor.get_max()
         
         return data
 
