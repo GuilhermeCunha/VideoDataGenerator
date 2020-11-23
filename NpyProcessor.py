@@ -73,9 +73,9 @@ class NpyProcessor(ExtensionProcessor):
     
     def get_mean(self):
         return self.mean / self.n_videos
-        
+
     def get_max(self):
-        return self.mean / self.n_videos
+        return self.max / self.n_videos
           
     def count_frames(self, path):
         logger.debug(f"Counting frames of video {path}")
