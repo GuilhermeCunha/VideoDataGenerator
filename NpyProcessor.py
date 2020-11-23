@@ -136,11 +136,15 @@ class NpyProcessor(ExtensionProcessor):
 
     def get_clips(self, path, label):
         logger.debug(f"Getting clips of video {path}")
-
-        if(self.sliding_window == False):
-            return [Clip(path, label, 0, self.n_frames_per_video)]
-        
         n_frames = self.count_frames(path)
+        
+        if(self.sliding_window == False):
+            clips = []
+            clips.append(Clip(path, label, 0, self.n_frames_per_video))
+
+            return clips
+        
+        
         
         clips = []
         n_windows = math.floor(n_frames / self.n_frames_per_video) - 1
