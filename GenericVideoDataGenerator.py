@@ -116,8 +116,8 @@ class VideoDataGenerator(tf.keras.utils.Sequence):
             self.shuffle_data()
 
     def __len__(self):
-        return math.ceil(len(self.data) / self.batch_size)
-        # return int(np.floor(len(self.data) / float(self.batch_size)))
+        # return math.ceil(len(self.data) / self.batch_size)
+        return int(np.floor(len(self.data) / float(self.batch_size)))
 
     def preprocess_data(self, data):
         data = np.array(data).astype('float32')         
